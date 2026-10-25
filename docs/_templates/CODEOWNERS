@@ -1,0 +1,17 @@
+# Copy to .github/CODEOWNERS and replace each {org}/{team} with real GitHub teams.
+# Code owners are only *required* reviewers when the branch protection rule
+# "Require review from Code Owners" is enabled on the default branch.
+# The last matching pattern wins, so general rules come first.
+
+/docs/                    @{org}/{maintainers}
+
+/docs/architecture/       @{org}/{architects}
+/docs/decisions/          @{org}/{architects}
+/docs/security/           @{org}/{security}
+/docs/legal/              @{org}/{legal}
+/docs/pricing/            @{org}/{product}
+/docs/requirements/       @{org}/{product}
+/docs/prds/               @{org}/{product}
+
+/tools/trace-check/       @{org}/{maintainers}
+/.github/                 @{org}/{maintainers}

@@ -1,0 +1,23 @@
+# RBAC matrix. Copy to docs/security/permissions.yaml.
+#
+# This file is the source of truth for authorization. A parametrized test loads
+# it and asserts that the code grants exactly these permissions, no more and no
+# less, so the matrix and the code cannot drift apart silently.
+#
+# For every resource, each action lists the roles allowed to perform it.
+# A role missing from an action's list is denied.
+
+roles:
+  - owner
+  - admin
+  - member
+
+resources:
+  tenant:
+    read: [owner, admin, member]
+    update: [owner, admin]
+    delete: [owner]
+  invoice:
+    read: [owner, admin]
+    create: [owner, admin]
+    refund: [owner]
