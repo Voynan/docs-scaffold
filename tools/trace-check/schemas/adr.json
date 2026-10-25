@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ADR front matter",
+  "type": "object",
+  "required": ["id", "title", "status", "date", "deciders"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^ADR-[0-9]{4,}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["proposed", "accepted", "rejected", "deprecated", "superseded"] },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "deciders": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "drivers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^((NFR|BR|PRD)-[0-9]{3,}|ADR-[0-9]{4,}|[0-9]{4}-[0-9]{2}-[a-z0-9-]+)$"
+      }
+    },
+    "supersedes": { "type": "string", "pattern": "^ADR-[0-9]{4,}$" },
+    "superseded_by": { "type": "string", "pattern": "^ADR-[0-9]{4,}$" }
+  },
+  "if": { "properties": { "status": { "const": "superseded" } } },
+  "then": { "required": ["superseded_by"] }
+}

@@ -4,3 +4,7 @@ docs/dev/**
 !docs/dev/**/
 !docs/dev/README.md
 !docs/dev/**/.keep
+
+# Python caches from running tools/trace-check
+__pycache__/
+.pytest_cache/

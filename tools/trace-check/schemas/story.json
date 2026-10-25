@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "User story front matter",
+  "type": "object",
+  "required": ["id", "title", "prd"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^US-[0-9]{3,}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "prd": { "type": "string", "pattern": "^PRD-[0-9]{3,}$" },
+    "requirements": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^(NFR|BR)-[0-9]{3,}$" }
+    },
+    "decisions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^ADR-[0-9]{4,}$" }
+    }
+  }
+}
