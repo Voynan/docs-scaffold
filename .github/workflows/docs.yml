@@ -1,0 +1,93 @@
+# Documentation quality gates. Copy this file to .github/workflows/ in each project.
+name: Docs
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 9 * * 1" # Mondays: the only run that also checks external links
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  traceability:
+    name: Traceability
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the checker
+        run: pip install -r tools/trace-check/requirements.txt pytest==8.3.4
+      - name: Test the checker
+        run: python -m pytest -q -p no:cacheprovider tools/trace-check/tests
+      - name: Test the author-stamp script
+        if: hashFiles('.claude/skills/author-stamp/tests/*.py') != ''
+        run: python -m pytest -q -p no:cacheprovider .claude/skills/author-stamp/tests
+      - name: Check traceability
+        # In a project, list the folders that hold tests, e.g. "--tests backend frontend".
+        run: python tools/trace-check/trace_check.py --docs docs --tests . --matrix "$RUNNER_TEMP/traceability.md"
+      - name: Publish the matrix in the job summary
+        if: always()
+        run: '[ -f "$RUNNER_TEMP/traceability.md" ] && cat "$RUNNER_TEMP/traceability.md" >> "$GITHUB_STEP_SUMMARY" || true'
+      - name: Upload the matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: traceability-matrix
+          path: ${{ runner.temp }}/traceability.md
+          if-no-files-found: ignore
+
+  markdown:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Lint Markdown
+        run: npx --yes markdownlint-cli2@0.23.3
+
+  links:
+    name: Links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # Pull requests and pushes check only links inside the repository, so a
+          # third-party outage never blocks a merge. The weekly run checks everything.
+          # Templates are excluded: their links resolve only once they are copied.
+          args: >-
+            --no-progress
+            ${{ github.event_name != 'schedule' && '--offline' || '' }}
+            --exclude-path docs/_templates
+            './**/*.md'
+          fail: true
+
+  diagrams:
+    name: Mermaid diagrams
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Mermaid CLI
+        run: npm install --global @mermaid-js/mermaid-cli@11.17.0
+      - name: Render every diagram
+        # Rendering is the only reliable syntax check; a diagram that fails to render fails the job.
+        run: |
+          echo '{"args": ["--no-sandbox"]}' > "$RUNNER_TEMP/puppeteer.json"
+          mkdir -p "$RUNNER_TEMP/rendered"
+          { grep -rl --include='*.md' '```mermaid' docs || true; } | while read -r file; do
+            echo "Rendering $file"
+            mmdc --quiet --puppeteerConfigFile "$RUNNER_TEMP/puppeteer.json" \
+              --input "$file" --output "$RUNNER_TEMP/rendered/$(echo "$file" | tr '/' '_')"
+          done

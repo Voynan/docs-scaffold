@@ -1,0 +1,18 @@
+{
+  // Lints every Markdown file Git would track; personal files in docs/dev/ are skipped.
+  // Dot folders are skipped by "**", so agent instructions are listed explicitly.
+  "globs": ["**/*.md", ".claude/**/*.md"],
+  "gitignore": true,
+  "ignores": ["node_modules/**"],
+  "config": {
+    "default": true,
+    // Prose and tables are wrapped by the editor, not by hand.
+    "MD013": false,
+    // Front matter "title" and the H1 heading carry the same title on purpose.
+    "MD025": { "front_matter_title": "" },
+    // Raw HTML is not rendered consistently; <br> is needed inside table cells.
+    "MD033": { "allowed_elements": ["br"] },
+    // Aligned table pipes turn every one-cell edit into a whole-table diff.
+    "MD060": false
+  }
+}
