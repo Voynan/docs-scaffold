@@ -1,0 +1,6 @@
+# Personal developer area: only the README and the .keep files that create
+# the folder skeleton are versioned. Everything else inside is ignored.
+docs/dev/**
+!docs/dev/**/
+!docs/dev/README.md
+!docs/dev/**/.keep
